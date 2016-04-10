@@ -199,8 +199,8 @@ void Node(CURL* curl_handle, std::ofstream* dot, std::string url, unsigned int d
       Node(curl_handle, dot, reference[a], depth-1); //recurse
   }
   return;
-
 }
+//====================================================================
 void Line(std::ofstream* dot, std::string parent, std::string child)
 {
   *dot << "\t\"" << parent << "\" -> \"" << child << "\";\n";
@@ -208,10 +208,15 @@ void Line(std::ofstream* dot, std::string parent, std::string child)
 }
 void SubGraph(std::ofstream* dot, std::string parent, std::string child[], const int NUM)
 {
-  *dot << "\t\"" << parent << "\" -> {\n";
+  //XXX is an unsigned int long enough? better be for now....
+  static unsigned int count = 0;
+  *dot << "\tsubgraph cluster_" << count << " {\n";
+  *dot << "\t\t\"" << parent << "\" -> {\n";
   for(int a=0; a<NUM; a++)
-    *dot << "\t\t\"" << child[a] << "\"\n";
-  *dot << "\t};\n";
+    *dot << "\t\t\t\"" << child[a] << "\"\n";
+  *dot << "\t\t};\n";
+  *dot << "\t}\n";
+  count++;
 }
 const char* URLize(std::string ref)
 {

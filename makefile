@@ -10,4 +10,4 @@ dot.o: dot.cpp
 	g++ -Wall -c dot.cpp
 
 clean:
-	rm *o map
+	rm *.o map
