@@ -211,10 +211,17 @@ void SubGraph(std::ofstream* dot, std::string parent, std::string child[], const
   //XXX is an unsigned int long enough? better be for now....
   static unsigned int count = 0;
   *dot << "\tsubgraph cluster_" << count << " {\n";
-  *dot << "\t\t\"" << parent << "\" -> {\n";
+  /*dot << "\t\t\"" << parent << "\" -> {\n";
   for(int a=0; a<NUM; a++)
     *dot << "\t\t\t\"" << child[a] << "\"\n";
   *dot << "\t\t};\n";
+  */
+  for(int a=0; a<NUM; a++)
+  {
+    *dot << "\t\t\"" << parent << "\" -> \"" << child[a];
+    *dot << "\" [sametail=\"" << parent << "\"";
+    *dot << ", samehead=\"" << child[a] << "\"];\n";
+  }
   *dot << "\t}\n";
   count++;
 }
