@@ -1,20 +1,22 @@
-#include <iostream>
-#include <fstream>
+#include <iostream> //for cout, cin, cerr, etc.
+#include <fstream>  //for ofstream
+#include <list> //for lists
+#include <curl/curl.h>  //for curl
  
-#include <curl/curl.h>
- 
+#include "dot.h"
+
 static size_t Stringify(void*, size_t, size_t, void*);
 
 int Dot()
 {
   //prototypes
-  void Header(std::ofstream*);
+  void Header(std::ofstream*, const std::string);
   void Footer(std::ofstream*);
   void Node(CURL*, std::ofstream*, std::string, unsigned int);
 
   //constants
   const char* DOT_NAME = "map.dot";
-  const std::string SEED = "Bowstring";
+  const std::string SEED = "Conway%27s_Game_of_Life";
 
   //objects and variables
   std::string html;
@@ -42,11 +44,12 @@ int Dot()
     return 1;
   }
 
-  //write the header
-  Header(&dot);
-  //write the nodes with recursion
   std::cout << "Select the depth: ";
   std::cin >> depth;
+
+  //write the header
+  Header(&dot, SEED);
+  //write the nodes with recursion
   Node(curl_handle, &dot, SEED, depth);
   //write the footer
   Footer(&dot);
@@ -131,7 +134,7 @@ static size_t Stringify(void *contents, size_t size, size_t nmemb, void *stream)
   return size*nmemb; //return the amount written
 }
 //-------------------------------------------------------------------
-void Header(std::ofstream* dot)
+void Header(std::ofstream* dot, const std::string SEED)
 {
   *dot << "digraph start {\n";
   //*dot << "\tgraph [overlap=false];\n";
@@ -139,16 +142,17 @@ void Header(std::ofstream* dot)
   *dot << "# fontname = \"Helvetica\",\n";
   *dot << "  #    fontsize = 1,\n";
   *dot << "      splines=true,\n";
-  *dot << "  #    maxiter=100,\n";
+  *dot << "      maxiter=100,\n";
   *dot << "  #    overlap=scale,\n";
   *dot << "  #    ratio=.5\n";
-  *dot << "    root = \"Bowstring\",\n";
-  *dot << "    ranksep = 20,\n";
-  *dot << "    nodesep = 10,\n";
+  *dot << "    root = \"" << SEED << "\",\n";
+  *dot << "  #  ranksep = 20,\n";
+  *dot << "  #  nodesep = 10,\n";
   *dot << "    nslimit1 = 1\n";
   *dot << "  ];\n";
   *dot << "  node [\n";
-  *dot << "    shape = point\n";
+  *dot << "    shape = point,\n";
+  *dot << "    label = \"\"\n";
   *dot << "  #    fontname = \"Helvetica\" \n";
   *dot << "  ];\n";
   *dot << "  edge [\n";
@@ -170,10 +174,22 @@ void Node(CURL* curl_handle, std::ofstream* dot, std::string url, unsigned int d
   void Line(std::ofstream*, std::string, std::string);
   void SubGraph(std::ofstream*, std::string, std::string[], const int);
   const char* URLize(std::string ref);
+  //bool Exists(void*, std::string);
 
   //variables
   std::string ref = "";
   std::string html;
+  static std::list<std::string> library;
+
+  //I tried really hard to make a function for this. :'('
+  //some long-winded wizardry
+  for(std::list<std::string>::const_iterator i=library.begin(); i!=library.end(); ++i)
+  {
+    if(*i == url)
+      return;
+  }
+  //if dne, insert
+  library.push_back(url);
 
     //write page body to the html string
   curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &html);
@@ -190,7 +206,6 @@ void Node(CURL* curl_handle, std::ofstream* dot, std::string url, unsigned int d
   // delete html;
 
   //enter file writing + recursion
-
   SubGraph(dot, url, reference, NUM);
   for(int a=0; a<NUM; a++)
   {
@@ -231,3 +246,15 @@ const char* URLize(std::string ref)
   std::string url = PREFIX + ref;
   return url.c_str();
 }
+/*bool Exists(void* library, std::string url)
+{
+  //some long-winded wizardry
+  for(std::list<std::string>::iterator i=(std::list<std::string>)library->begin(); i<(std::list<std::string>)library->end(); ++i)
+  {
+    if(*i == url)
+      return 1;
+  }
+  //if dne, insert
+  (std::list<std::string>)library->push_back(url);
+  return 0;
+}*/

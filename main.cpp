@@ -1,4 +1,4 @@
-#include "dot.cpp"
+#include "dot.h"
 int main()
 {
   Dot();
